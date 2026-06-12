@@ -7,11 +7,19 @@ intent and result snapshot per query.
 
 def q1():
     """Q1 — List all authors who have published at venue :NeurIPS.
-
     Variables in the SELECT: ?author.
     """
-    # TODO: SELECT distinct authors of papers where ?paper :publishedIn :NeurIPS.
-    return ""
+    #  SELECT distinct authors of papers where ?paper :publishedIn :NeurIPS.
+    return """
+    PREFIX : <http://aispire.example.org/publications/>
+    PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+    
+    SELECT DISTINCT ?author
+    WHERE {
+        ?paper :publishedIn :NeurIPS ;
+               :authoredBy ?author .
+    }
+    """
 
 
 def q2():
@@ -20,8 +28,16 @@ def q2():
     Variables in the SELECT: ?topic ?n.
     Use GROUP BY ?topic and COUNT(?paper) AS ?n.
     """
-    # TODO: SELECT with GROUP BY topic.
-    return ""
+    # SELECT with GROUP BY topic.
+    return """
+    PREFIX : <http://aispire.example.org/publications/>
+    
+    SELECT ?topic (COUNT(?paper) AS ?n)
+    WHERE {
+        ?paper :topic ?topic .
+    }
+    GROUP BY ?topic
+    """
 
 
 def q3():
@@ -36,8 +52,16 @@ def q3():
     2. `FILTER (str(?a) < str(?b))` — without it, each unordered pair
        appears twice (a,b) and (b,a).
     """
-    # TODO: SELECT DISTINCT ?a ?b WHERE { ?p :authoredBy ?a, ?b . FILTER ... }
-    return ""
+    #  SELECT DISTINCT ?a ?b WHERE { ?p :authoredBy ?a, ?b . FILTER ... }
+    return """
+    PREFIX : <http://aispire.example.org/publications/>
+    
+    SELECT DISTINCT ?a ?b
+    WHERE {
+        ?p :authoredBy ?a , ?b .
+        FILTER (STR(?a) < STR(?b))
+    }
+    """
 
 
 def q4():
@@ -47,8 +71,16 @@ def q4():
     The :doi triple must live inside OPTIONAL { ... } — putting it in the
     main WHERE drops papers without a DOI.
     """
-    # TODO: ?paper a :Paper . OPTIONAL { ?paper :doi ?doi } .
-    return ""
+    # ?paper a :Paper . OPTIONAL { ?paper :doi ?doi } .
+    return """
+    PREFIX : <http://aispire.example.org/publications/>
+    
+    SELECT ?paper ?doi
+    WHERE {
+        ?paper a :Paper .
+        OPTIONAL { ?paper :doi ?doi } .
+    }
+    """
 
 
 def q5():
@@ -56,8 +88,19 @@ def q5():
 
     Returns a boolean.
     """
-    # TODO: ASK against a sub-SELECT that COUNTs papers per author with HAVING.
-    return ""
+    # ASK against a sub-SELECT that COUNTs papers per author with HAVING.
+    return """
+    PREFIX : <http://aispire.example.org/publications/>
+    
+    ASK {
+        SELECT ?author
+        WHERE {
+            ?paper :authoredBy ?author .
+        }
+        GROUP BY ?author
+        HAVING (COUNT(?paper) > 10)
+    }
+    """
 
 
 def q6():
@@ -65,8 +108,18 @@ def q6():
 
     Returns triples ?paper :authoredBy ?author for papers with :year 2023.
     """
-    # TODO: CONSTRUCT { ... } WHERE { ?paper :year 2023 ; :authoredBy ?author }
-    return ""
+    #  CONSTRUCT { ... } WHERE { ?paper :year 2023 ; :authoredBy ?author }
+    return """
+    PREFIX : <http://aispire.example.org/publications/>
+    
+    CONSTRUCT {
+        ?paper :authoredBy ?author .
+    }
+    WHERE {
+        ?paper :year 2023 ;
+               :authoredBy ?author .
+    }
+    """
 
 
 def q7():
@@ -74,8 +127,17 @@ def q7():
 
     Variables in the SELECT: ?paper ?cc.
     """
-    # TODO: ORDER BY DESC(?cc) LIMIT 5 against ?paper :citationCount ?cc.
-    return ""
+    #  ORDER BY DESC(?cc) LIMIT 5 against ?paper :citationCount ?cc.
+    return """
+    PREFIX : <http://aispire.example.org/publications/>
+    
+    SELECT ?paper ?cc
+    WHERE {
+        ?paper :citationCount ?cc .
+    }
+    ORDER BY DESC(?cc)
+    LIMIT 5
+    """
 
 
 def q8():
@@ -83,5 +145,14 @@ def q8():
 
     Variables in the SELECT: ?author.
     """
-    # TODO: union of prefLabel / altLabel matches on "Hinton".
-    return ""
+    #  union of prefLabel / altLabel matches on "Hinton".
+    return """
+    PREFIX : <http://aispire.example.org/publications/>
+    PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+    
+    SELECT DISTINCT ?author
+    WHERE {
+        ?author ?label "Hinton" .
+        FILTER (?label = skos:prefLabel || ?label = skos:altLabel)
+    }
+    """
